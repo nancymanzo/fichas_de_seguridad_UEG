@@ -1,0 +1,1164 @@
+---
+title: ""
+output:
+css: "style.css"
+header-includes:
+  - \usepackage{booktabs}
+  - \usepackage{longtable}
+  - \usepackage{array}
+  - \usepackage{multirow}
+  - \usepackage{wrapfig}
+  - \usepackage{float}
+  - \floatplacement{figure}{H} 
+  - \usepackage{colortbl}
+  - \usepackage{pdflscape}
+  - \usepackage{tabu}
+  - \usepackage{threeparttable}
+  - \usepackage{threeparttablex}
+  - \usepackage[normalem]{ulem}
+  - \usepackage{makecell}
+  - \usepackage{xcolor}
+  - \usepackage{numprint}
+---
+
+
+```{r,  include=F, warning=F, echo=F}
+fecha_inicial <- "2023-02-11"
+fecha_final <- "2023-02-17"
+
+
+#Semana anterior
+fecha_inicial_2 <- "2023-02-04"
+fecha_final_2 <- "2023-02-10"
+```
+
+![](logos_ssc.png)
+
+::: {align="center"}
+**Reporte semanal:**
+
+**`r format(as.Date(fecha_inicial), "%d de %B")` a `r format(as.Date(fecha_final), "%d de %B de %Y")`**
+:::
+
+------------------------------------------------------------------------
+
+**1. Informe General de acciones ordinarias realizadas durante el año 2023**
+
+A partir del 13 de septiembre de 2013 la Unidad Especializada de Género pasó a formar parte de la Subsecretaría de Desarrollo Institucional (como parte de la Dirección de Igualdad Sustantiva y Atención a la Violencia de Género), con la finalidad de fortalecer su actuación.
+
+```{r,  include=F, warning=F, echo=F}
+
+library(googledrive)
+library(googlesheets4)
+library(shiny)
+library(readxl)
+library(readr)
+library(viridis)
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(tidyverse)
+library(DT)
+library(plotly)
+library(lubridate)
+library(viridis)
+library(RColorBrewer) 
+library(janitor)
+library(mxmaps)
+library(stringr)
+library(wordcloud2)
+library(RColorBrewer)
+library(shinydashboard)
+library(wordcloud)
+library(shinydashboard)
+library(shiny)
+library(plotly)
+library(dashboardthemes)
+library(shinythemes)
+library(shinybusy)
+library(extrafont)
+library(showtext)
+library(jsonlite)
+library(data.table)
+library(shinyjs)
+library(leaflet)
+library(mxmaps)
+
+
+
+drive_find(n_max = 6)
+1
+
+
+drive_download("BASE GENERAL SDI.xlsx",overwrite = TRUE)
+
+sdi_2022 <- read_excel("BASE GENERAL SDI.xlsx", 
+                sheet = "QUEJAS 2022 SDI", range = "A3:CB63", 
+                col_types = c("numeric", "date", "text", 
+                              "text", "text", "text", "text", "text", 
+                              "text", "text", "text", "text", "text", 
+                              "text", "text", "text", "text", "text", 
+                              "text", "text", "text", "text", "text", 
+                              "text", "text", "text", "text", "text", 
+                              "text", "text", "text", "text", "text", 
+                              "text", "text", "text", "text", "text", 
+                              "text", "text", "text", "text", "text", 
+                              "text", "text", "text", "text", "text", 
+                              "text", "text", "text", "text", "text", 
+                              "text", "text", "text", "text", "text", 
+                              "text", "text", "text", "text", "text", 
+                              "text", "text", "text", "text", "text", 
+                              "text", "text", "text", "text", "text", 
+                              "text", "text", "text", "text", "text", 
+                              "text", "text"))
+
+
+sdi_2023 <- read_excel("BASE GENERAL SDI.xlsx", 
+                       sheet = "QUEJAS SDI 2023", range = "A3:CE38", 
+                       col_types = c("numeric", "date", "text", 
+                                     "text", "text", "text", "text", "text", 
+                                     "text", "text", "text", "text", "text", 
+                                     "text", "text", "text", "numeric", 
+                                     "text", "text", "text", "text", "text", 
+                                     "text", "text", "text", "text", "text", 
+                                     "text", "text", "text", "text", "text", 
+                                     "text", "text", "text", "text", "text", 
+                                     "text", "text", "text", "text", "text", 
+                                     "text", "text", "text", "text", "text", 
+                                     "text", "text", "text", "text", "text", 
+                                     "text", "text", "text", "text", "text", 
+                                     "text", "text", "text", "text", "text", 
+                                     "text", "text", "text", "text", "text", 
+                                     "text", "text", "text", "text", "text", 
+                                     "text", "text", "text", "text", "text", 
+                                     "text", "text", "text", "text", "text", 
+                                     "text"))
+
+
+
+
+
+sdi_2022_uno<- sdi_2022 %>% select(1:76)
+
+sdi_2022_uno$`Cuál_medida` <- sdi_2022$`Cuál_media`
+sdi_2022_uno$`Aprobada`<-  "N/A"
+sdi_2022_uno$`Rechazada`<-  "N/A"
+sdi_2022_uno$`No se sabe`<-  "N/A"
+sdi_2022_uno$`Aprobada a Dicho de la Víctima`<-  "N/A"
+sdi_2022_uno$`Carpera iniciada por la DGAI` <- sdi_2022$`Carpera iniciada por la DGAI`
+sdi_2022_uno$Estatus <- sdi_2022$Estatus
+sdi_2022_uno->sdi_2022
+
+rbind(sdi_2022, sdi_2023)->quejas
+
+
+
+###########################
+
+
+
+quejas$Fecha_queja <-as.Date(quejas$Fecha_queja,format="%Y-%m-%d")
+quejas$Periodo     <-format(as.Date(quejas$Fecha_queja,format="%Y-%m-%d"), "%Y-%m")
+quejas$Año         <-format(as.Date(quejas$Fecha_queja,format="%Y-%m-%d"), "%Y")
+quejas$Mes         <-format(as.Date(quejas$Fecha_queja,format="%Y-%m-%d"), "%B")
+quejas$Día         <-format(as.Date(quejas$Fecha_queja,format="%Y-%m-%d"), "%d")
+
+
+quejas<- quejas %>% 
+  mutate(
+    Mes=case_when(
+      Mes=="enero" ~ "Enero",
+      Mes=="febrero" ~ "Febrero",
+      Mes=="marzo" ~ "Marzo",
+      Mes=="abril" ~ "Abril",
+      Mes=="mayo" ~ "Mayo",
+      Mes=="junio" ~ "Junio",
+      Mes=="julio" ~ "Julio",
+      Mes=="agosto" ~ "Agosto",
+      Mes=="septiembre" ~ "Septiembre",
+      Mes=="octubre" ~ "Octubre",
+      Mes=="noviembre" ~ "Noviembre",
+      Mes=="diciembre" ~ "Diciembre"),
+    Mes=factor(
+      Mes,levels=c("Septiembre", "Octubre","Noviembre", "Diciembre",
+                   "Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio","Julio", "Agosto")))
+
+
+```
+
+```{r,  include=F, warning=F, echo=F}
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  summarise(`Total de quejas`=n()) ->total_quejas
+
+total_quejas[1,1]->total_quejas
+total_quejas %>% unlist()->total_quejas
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  group_by(Fecha_queja) %>% 
+  summarise(Total=n()) %>% #->quejas_totales 
+  ggplot(aes(x=as.character.Date(Fecha_queja), y=Total)) +
+  geom_segment( aes(x=as.character.Date(Fecha_queja), xend=as.character.Date(Fecha_queja), y=0, yend=Total)) +
+  geom_point(size=5, color="#9F2241", fill=alpha("#9F2241", 0.3), alpha=0.7, shape=21, stroke=2) +
+  labs(x="", y="", title = "Total de quejas de la semana", 
+       subtitle = paste0("Periodo: ", fecha_inicial, " a ", fecha_final),
+       color=" ", fill=" " , size="") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 9)) +
+  scale_y_continuous(labels = scales::comma) +
+  theme_bw()+
+  theme(legend.position = "none",
+        legend.text = element_text(face="bold"),
+        legend.title = element_blank(),
+        axis.title = element_text(face="bold"),
+        plot.title = element_text(face="bold", size=18),
+        plot.subtitle = element_text(size=10, face="italic"),
+        plot.caption = element_text(face="italic"))->gr_1
+
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  summarise(`Total de quejas`=n()) ->total_quejas_anterior
+
+total_quejas_anterior[1,1]->total_quejas_anterior
+total_quejas_anterior %>% unlist()->total_quejas_anterior
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  group_by(Fecha_queja) %>% 
+  summarise(Total=n()) %>% #->quejas_totales 
+  ggplot(aes(x=as.character.Date(Fecha_queja), y=Total)) +
+  geom_segment( aes(x=as.character.Date(Fecha_queja), xend=as.character.Date(Fecha_queja), y=0, yend=Total)) +
+  geom_point(size=5, color="#9F2241", fill=alpha("#9F2241", 0.3), alpha=0.7, shape=21, stroke=2) +
+  labs(x="", y="", title = "Total de quejas semana anterior", 
+       subtitle = paste0("Periodo: ", fecha_inicial_2, " a ", fecha_final_2),
+       color=" ", fill=" " , size="") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 9)) +
+  scale_y_continuous(labels = scales::comma) +
+  theme_bw()+
+  theme(legend.position = "none",
+        legend.text = element_text(face="bold"),
+        legend.title = element_blank(),
+        axis.title = element_text(face="bold"),
+        plot.title = element_text(face="bold", size=18),
+        plot.subtitle = element_text(size=10, face="italic"),
+        plot.caption = element_text(face="italic"))->gr_1_anterior
+```
+::: {align="justify"}
+
+ 
+
+-   **a)      Cantidad de quejas durante la última semana**  
+
+
+De **`r format(as.Date(fecha_inicial_2), "%d de %B")`** a **`r format(as.Date(fecha_final_2), "%d de %B de %Y")`** la Unidad Especializada de Género brindó atención a **`r total_quejas_anterior`** mujeres víctimas de violencia por parte de personal policial, recabando sus quejas y expedientes completos. Las quejas se desglosan de la siguiente forma:
+
+
+De **`r format(as.Date(fecha_inicial), "%d de %B")`** a **`r format(as.Date(fecha_final), "%d de %B de %Y")`** la Unidad Especializada de Género brindó atención a **`r total_quejas`** mujeres víctimas de violencia por parte de personal policial, recabando sus quejas y expedientes completos. Las quejas se desglosan de la siguiente forma:
+
+ 
+
+```{r, include=T, warning=F, echo=F, fig.width=12}
+library(patchwork)
+
+gr_1_anterior+ gr_1
+
+```
+
+------------------------------------------------------------------------
+
+```{r,  include=F, warning=F, echo=F}
+
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  summarise(total=n(),
+            porcentaje=total/total_quejas)->total_quejas_por_conducta
+
+total_quejas_por_conducta[1,1]->total_quejas_por_conducta
+total_quejas_por_conducta %>% unlist()->total_quejas_por_conducta
+
+
+
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  group_by(Conducta_denunciada) %>% 
+  summarise(total=n(),
+            porcentaje=total/total_quejas) %>% 
+  arrange(-total) ->conductas_descendente
+
+
+###############################################################################
+###############################################################################
+# - - - - - - - - - - - - - - - - - Ranking  - - - - - - - - - - - - - - - - - #
+
+conductas_descendente[1,1]->delito_1
+delito_1 %>% unlist()->delito_1
+conductas_descendente[1,2]->total_delito_1
+total_delito_1 %>% unlist()->total_delito_1
+
+conductas_descendente[2,1]->delito_2
+delito_2 %>% unlist()->delito_2
+conductas_descendente[2,2]->total_delito_2
+total_delito_2 %>% unlist()->total_delito_2
+
+conductas_descendente[3,1]->delito_3
+delito_3 %>% unlist()->delito_3
+conductas_descendente[3,2]->total_delito_3
+total_delito_3 %>% unlist()->total_delito_3
+
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  group_by(Conducta_denunciada) %>% 
+  summarise(total=n(),
+            porcentaje=total/total_quejas) %>% 
+  ggplot(aes(x=reorder(Conducta_denunciada, total), y=total))+
+  geom_col(fill="#0f3776", alpha=.9, stat="identity") +
+  coord_flip()+
+  #geom_text(aes(label = percent(Porcentaje, accuracy = 1), #`Total de quejas`
+  #               ), size=5, hjust=0, fontface="bold") +
+  geom_label(aes(x = Conducta_denunciada, y = total, label = percent(porcentaje, accuracy = 1,), size=13),
+             size=3, alpha=1, colour="#0f3776",   label.size = 0.25,  fontface = "bold")+
+  labs(x="", y="", title = "Conducta principal denunciada, semana actual", color=" ", fill=" ",
+              subtitle = paste0("Periodo: ", fecha_inicial, " a ", fecha_final)) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 40)) +
+  #scale_y_continuous(labels = scales::percent, limits = c(0,1)) +
+  # theme(legend.position = "none",
+  #       axis.text.x = element_text(size=12, angle = 0, vjust = 0.5, hjust=.5, face="bold", color="black"),
+  #       axis.text.y = element_text(size=16, angle = 0, face="bold", color="black"))
+  theme_bw()+
+  theme(legend.position = "none",
+        legend.text = element_text(face="bold"),
+        legend.title = element_blank(),
+        axis.title = element_text(face="bold"),
+        plot.title = element_text(face="bold", size=13),
+        plot.subtitle = element_text(size=10, face="italic"),
+        plot.caption = element_text(face="italic"))->gr_2
+
+
+
+
+
+
+
+
+
+
+#################################################################################
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  summarise(total=n(),
+            porcentaje=total/total_quejas_anterior)->total_quejas_por_conducta_anterior
+
+total_quejas_por_conducta_anterior[1,1]->total_quejas_por_conducta_anterior
+total_quejas_por_conducta_anterior %>% unlist()->total_quejas_por_conducta_anterior
+
+
+
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  group_by(Conducta_denunciada) %>% 
+  summarise(total=n(),
+            porcentaje=total/total_quejas_anterior) %>% 
+  arrange(-total) ->conductas_descendente_anterior
+
+
+###############################################################################
+###############################################################################
+# - - - - - - - - - - - - - - - - - Ranking  - - - - - - - - - - - - - - - - - #
+
+conductas_descendente_anterior[1,1]->delito_1_anterior
+delito_1_anterior %>% unlist()->delito_1_anterior
+conductas_descendente_anterior[1,2]->total_delito_1_anterior
+total_delito_1_anterior %>% unlist()->total_delito_1_anterior
+
+conductas_descendente_anterior[2,1]->delito_2_anterior
+delito_2_anterior %>% unlist()->delito_2_anterior
+conductas_descendente_anterior[2,2]->total_delito_2_anterior
+total_delito_2_anterior %>% unlist()->total_delito_2_anterior
+
+conductas_descendente_anterior[3,1]->delito_3_anterior
+delito_3_anterior %>% unlist()->delito_3_anterior
+conductas_descendente_anterior[3,2]->total_delito_3_anterior
+total_delito_3_anterior %>% unlist()->total_delito_3_anterior
+
+
+conductas_descendente_anterior[4,1]->delito_4_anterior
+delito_4_anterior %>% unlist()->delito_4_anterior
+conductas_descendente_anterior[4,2]->total_delito_4_anterior
+total_delito_4_anterior %>% unlist()->total_delito_4_anterior
+
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  group_by(Conducta_denunciada) %>% 
+  summarise(total=n(),
+            porcentaje=total/total_quejas_anterior) %>% 
+  ggplot(aes(x=reorder(Conducta_denunciada, total), y=total))+
+  geom_col(fill="#0f3776", alpha=.9, stat="identity") +
+  coord_flip()+
+  #geom_text(aes(label = percent(Porcentaje, accuracy = 1), #`Total de quejas`
+  #               ), size=5, hjust=0, fontface="bold") +
+  geom_label(aes(x = Conducta_denunciada, y = total, label = percent(porcentaje, accuracy = 1,), size=13),
+             size=3, alpha=1, colour="#0f3776",   label.size = 0.25,  fontface = "bold")+
+  labs(x="", y="", title = "Conducta denunciada, semana anterior", color=" ", fill=" ",
+              subtitle = paste0("Periodo: ", fecha_inicial_2, " a ", fecha_final_2)) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 40)) +
+  #scale_y_continuous(labels = scales::percent, limits = c(0,1)) +
+  # theme(legend.position = "none",
+  #       axis.text.x = element_text(size=12, angle = 0, vjust = 0.5, hjust=.5, face="bold", color="black"),
+  #       axis.text.y = element_text(size=16, angle = 0, face="bold", color="black"))
+  theme_bw()+
+  theme(legend.position = "none",
+        legend.text = element_text(face="bold"),
+        legend.title = element_blank(),
+        axis.title = element_text(face="bold"),
+        plot.title = element_text(face="bold", size=13),
+        plot.subtitle = element_text(size=10, face="italic"),
+        plot.caption = element_text(face="italic"))->gr_2_anterior
+```
+
+ 
+
+-   **b)      Cantidad de quejas según el tipo de conducta principal**  
+
+De **`r format(as.Date(fecha_inicial_2), "%d de %B")`** a **`r format(as.Date(fecha_final_2), "%d de %B de %Y")`** se han contabilizado un total de **`r total_quejas_por_conducta`** conductas denunciadas: **`r total_delito_1_anterior`** por **`r tolower(delito_1_anterior)`**, **`r total_delito_2_anterior`** por **`r tolower(delito_2_anterior)`**, **`r total_delito_3_anterior`** por **`r tolower(delito_3_anterior)`** y **`r total_delito_4_anterior`** por **`r tolower(delito_4_anterior)`**.
+
+ 
+
+De **`r format(as.Date(fecha_inicial), "%d de %B")`** a **`r format(as.Date(fecha_final), "%d de %B de %Y")`** se han contabilizado un total de **`r total_quejas_por_conducta`** conductas denunciadas: **`r total_delito_1`** por **`r tolower(delito_1)`**.
+
+ 
+
+```{r, include=T, warning=F, echo=F, fig.width=12}
+
+gr_2_anterior + gr_2
+```
+
+ 
+
+------------------------------------------------------------------------
+
+```{r,  include=F, warning=F, echo=F}
+
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  group_by(Lugar_adscripción...45) %>% 
+  summarise(total=n(),
+            porcentaje=total/total_quejas) %>% 
+  arrange(-total) ->adscripcion_asc
+
+
+# - - - - - - - - - - - - - - - - - Ranking  - - - - - - - - - - - - - - - - - #
+
+
+adscripcion_asc[1,1]->ads_1
+ads_1 %>% unlist()->ads_1
+adscripcion_asc[1,2]->total_ads_1
+total_ads_1 %>% unlist()->total_ads_1
+
+
+adscripcion_asc[2,1]->ads_2
+ads_2 %>% unlist()->ads_2
+adscripcion_asc[2,2]->total_ads_2
+total_ads_2 %>% unlist()->total_ads_2
+
+
+adscripcion_asc[3,1]->ads_3
+ads_3 %>% unlist()->ads_3
+adscripcion_asc[3,2]->total_ads_3
+total_ads_3 %>% unlist()->total_ads_3
+
+
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  group_by(Lugar_adscripción...45) %>% 
+  summarise(total=n()) %>% 
+  ggplot(aes(x=reorder(Lugar_adscripción...45, -total), y=`total`))+
+  geom_col(fill="#235B4E", alpha=.9)+
+  geom_label(aes(x = Lugar_adscripción...45, y = `total`, label = comma(total), size=13),
+             size=3, alpha=1, colour="#235B4E",   label.size = 0.25,  fontface = "bold")+
+
+  labs(x="", y="", title = "Área de adscripción del agresor, semana actual", color=" ", fill=" ",
+              subtitle = paste0("Periodo: ", fecha_inicial, " a ", fecha_final)) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
+  #scale_y_continuous(labels = scales::percent, limits = c(0,1)) +
+  # theme(legend.position = "none",
+  #       axis.text.x = element_text(size=12, angle = 0, vjust = 0.5, hjust=.5, face="bold", color="black"),
+  #       axis.text.y = element_text(size=16, angle = 0, face="bold", color="black"))
+  theme_bw()+
+  theme(legend.position = "none",
+        legend.text = element_text(face="bold"),
+        legend.title = element_blank(),
+        axis.title = element_text(face="bold"),
+        plot.title = element_text(face="bold", size=13),
+        plot.subtitle = element_text(size=10, face="italic"),
+        plot.caption = element_text(face="italic"))->gr_3
+
+
+
+
+
+#############################################################################
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  group_by(Lugar_adscripción...45) %>% 
+  summarise(total=n(),
+            porcentaje=total/total_quejas) %>% 
+  arrange(-total) ->adscripcion_asc_anterior
+
+
+# - - - - - - - - - - - - - - - - - Ranking  - - - - - - - - - - - - - - - - - #
+
+
+adscripcion_asc_anterior[1,1]->ads_1_anterior
+ads_1_anterior %>% unlist()->ads_1_anterior
+adscripcion_asc_anterior[1,2]->total_ads_1_anterior
+total_ads_1_anterior %>% unlist()->total_ads_1_anterior
+
+
+adscripcion_asc_anterior[2,1]->ads_2_anterior
+ads_2_anterior %>% unlist()->ads_2_anterior
+adscripcion_asc_anterior[2,2]->total_ads_2_anterior
+total_ads_2_anterior %>% unlist()->total_ads_2_anterior
+
+
+adscripcion_asc_anterior[3,1]->ads_3_anterior
+ads_3_anterior %>% unlist()->ads_3_anterior
+adscripcion_asc_anterior[3,2]->total_ads_3_anterior
+total_ads_3_anterior %>% unlist()->total_ads_3_anterior
+
+
+adscripcion_asc_anterior[4,1]->ads_4_anterior
+ads_4_anterior %>% unlist()->ads_4_anterior
+adscripcion_asc_anterior[4,2]->total_ads_4_anterior
+total_ads_4_anterior %>% unlist()->total_ads_4_anterior
+
+
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  group_by(Lugar_adscripción...45) %>% 
+  summarise(total=n()) %>% 
+  ggplot(aes(x=reorder(Lugar_adscripción...45, -total), y=`total`))+
+  geom_col(fill="#235B4E", alpha=.9)+
+  geom_label(aes(x = Lugar_adscripción...45, y = `total`, label = comma(total), size=13),
+             size=3, alpha=1, colour="#235B4E",   label.size = 0.25,  fontface = "bold")+
+
+  labs(x="", y="", title = "Área de adscripción del agresor, semana anterior", color=" ", fill=" ",
+              subtitle = paste0("Periodo: ", fecha_inicial_2, " a ", fecha_final_2)) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  #scale_y_continuous(labels = scales::percent, limits = c(0,1)) +
+  # theme(legend.position = "none",
+  #       axis.text.x = element_text(size=12, angle = 0, vjust = 0.5, hjust=.5, face="bold", color="black"),
+  #       axis.text.y = element_text(size=16, angle = 0, face="bold", color="black"))
+  theme_bw()+
+  theme(legend.position = "none",
+        legend.text = element_text(face="bold"),
+        legend.title = element_blank(),
+        axis.title = element_text(face="bold"),
+        plot.title = element_text(face="bold", size=13),
+        plot.subtitle = element_text(size=10, face="italic"),
+        plot.caption = element_text(face="italic"))->gr_3_anterior
+
+
+
+
+
+```
+
+ 
+
+-   **c)      Cantidad de quejas según el área de adscripción del presunto agresor.**  
+
+De **`r format(as.Date(fecha_inicial_2), "%d de %B")`** a **`r format(as.Date(fecha_final_2), "%d de %B de %Y")`** por área de adscripción del presunto agresor se contabilizó: **`r total_ads_1_anterior`** de la **`r ads_1_anterior`**, **`r total_ads_2_anterior`** de la **`r ads_2_anterior`** y **`r total_ads_3_anterior`** de la **`r ads_3_anterior`**.
+ 
+
+De **`r format(as.Date(fecha_inicial), "%d de %B")`** a **`r format(as.Date(fecha_final), "%d de %B de %Y")`** por área de adscripción del presunto agresor se contabilizó: **`r total_ads_1`** de la **`r ads_1`**.
+
+   
+
+```{r, include=T, warning=F, echo=F, fig.width=12}
+
+gr_3_anterior + gr_3
+```
+
+ 
+
+```{r, include=F, warning=F, echo=F}
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  mutate(Se_otorgó_medida=case_when(
+    Se_otorgó_medida %in% c("Sí","sí","Si","si")~1, 
+    T~0)) %>% 
+  summarise(`Total de medidas aprobadas`=sum(Se_otorgó_medida))->med_aprobadas
+
+med_aprobadas[1,1]->med_aprobadas
+med_aprobadas %>% unlist()->med_aprobadas
+
+
+quejas %>% 
+  mutate(Se_otorgó_medida=case_when(
+    Se_otorgó_medida %in% c("Sí","sí","Si","si")~1, 
+    T~0)) %>% 
+  summarise(`Total de medidas aprobadas`=sum(Se_otorgó_medida))
+
+
+quejas %>% 
+  pivot_longer(cols=78:80,
+               names_to="Medidas",
+               values_to = "Total") %>% 
+  mutate(Total=case_when(
+    Total=="Sí"~1, 
+    T~0)) %>% 
+  filter(!Medidas == "Otra (específicar)") %>% 
+  summarise(`Total de medidas`=sum(Total))->tot_med
+
+
+
+tot_med[1,1]->tot_med
+tot_med %>% unlist()->tot_med
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+
+
+quejas %>%     
+  filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  pivot_longer(cols=78:80,
+               names_to="Tipo de medida",
+               values_to = "Total") %>% 
+  mutate(Total=case_when(
+    Total %in% c("Sí", "Si")~1, 
+    T~0)) %>% 
+  group_by(`Tipo de medida`) %>% 
+  summarise(`Total de medidas`=sum(Total))->aprobada_med
+
+aprobada_med[1,1]->aprobada_1
+aprobada_1 %>% unlist()->aprobada_1
+aprobada_med[1,2]->aprobada_total_1
+aprobada_total_1 %>% unlist()->aprobada_total_1
+
+aprobada_med[2,1]->aprobada_2
+aprobada_2 %>% unlist()->aprobada_2
+aprobada_med[2,2]->aprobada_total_2
+aprobada_total_2 %>% unlist()->aprobada_total_2
+
+aprobada_med[3,1]->aprobada_3
+aprobada_3 %>% unlist()->aprobada_3
+aprobada_med[3,2]->aprobada_total_3
+aprobada_total_3 %>% unlist()->aprobada_total_3
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  pivot_longer(cols=78:80,
+               names_to="Medidas",
+               values_to = "Total") %>% 
+  mutate(Total=case_when(
+    Total=="Sí"~1, 
+    T~0)) %>% 
+  group_by(Medidas) %>% 
+  filter(!Medidas == "Otra (específicar)") %>% 
+  summarise(`Total de medidas`=sum(Total))->total_med_asc
+
+total_med_asc[1,1]-> med_1 
+med_1%>% unlist()->med_1
+total_med_asc[1,2]-> total_med_1 
+total_med_1%>% unlist()->total_med_1
+
+total_med_asc[2,1]-> med_2 
+med_2%>% unlist()->med_2
+total_med_asc[2,2]-> total_med_2 
+total_med_2%>% unlist()->total_med_2
+
+
+total_med_asc[3,1]-> med_3 
+med_3%>% unlist()->med_3
+total_med_asc[3,2]-> total_med_3 
+total_med_3%>% unlist()->total_med_3
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  pivot_longer(cols=78:80,
+               names_to="Medidas",
+               values_to = "Total") %>% 
+  mutate(Total=case_when(
+    Total=="Sí"~1, 
+    T~0)) %>% 
+  group_by(Medidas) %>% 
+  filter(!Medidas == "Otra (específicar)") %>% 
+  summarise(`Total de medidas`=sum(Total),
+            Porcentaje= (`Total de medidas`/tot_med)) %>% 
+  ggplot(aes(x=Medidas, y=Porcentaje, fill=Medidas , 
+             label=percent(Porcentaje, accuracy = 1),
+             text = paste("\nTotal de cias: ", percent(Porcentaje, accuracy = 1.1),
+                          "\nConducta: ", Medidas , sep="")))+
+  geom_bar(position = "stack", stat = "identity", color="white", alpha=.8)+
+  geom_label(aes(x=Medidas, y=Porcentaje, group=Medidas),position = position_stack(vjust = 1),
+             fill = "white", colour="black", size = 4)+
+  scale_fill_manual(values = c(
+            `Cambio a la víctima` = "#9F2241",
+            `Cambio al agresor` = "#235B4E")) + 
+  scale_y_continuous(labels = percent_format()) +
+  labs(x="", y="", title="Total de medidas de protección",
+       subtitle = paste0("Periodo: ", fecha_inicial, " a ", fecha_final))+
+  theme_bw()+
+  theme(legend.position = "none",
+        legend.text = element_text(face="bold"),
+        legend.title = element_blank(),
+        axis.title = element_text(face="bold"),
+        plot.title = element_text(face="bold", size=18),
+        plot.subtitle = element_text(size=10, face="italic"),
+        plot.caption = element_text(face="italic"))->gr_5
+
+
+
+
+
+###############################################################################
+###############################################################################
+
+
+
+
+
+
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  mutate(Se_otorgó_medida=case_when(
+    Se_otorgó_medida %in% c("Sí","sí","Si","si")~1, 
+    T~0)) %>% 
+  summarise(`Total de medidas aprobadas`=sum(Se_otorgó_medida))->med_aprobadas_anterior
+
+med_aprobadas_anterior[1,1]->med_aprobadas_anterior
+med_aprobadas_anterior %>% unlist()->med_aprobadas_anterior
+
+
+quejas %>% 
+  mutate(Se_otorgó_medida=case_when(
+    Se_otorgó_medida %in% c("Sí","sí","Si","si")~1, 
+    T~0)) %>% 
+  summarise(`Total de medidas aprobadas`=sum(Se_otorgó_medida))
+
+
+quejas %>% 
+  pivot_longer(cols=78:80,
+               names_to="Medidas",
+               values_to = "Total") %>% 
+  mutate(Total=case_when(
+    Total=="Sí"~1, 
+    T~0)) %>% 
+  filter(!Medidas == "Otra (específicar)") %>% 
+  summarise(`Total de medidas`=sum(Total))->tot_med_anterior
+
+
+
+tot_med_anterior[1,1]->tot_med_anterior
+tot_med_anterior %>% unlist()->tot_med_anterior
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+
+
+quejas %>%     
+  filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  pivot_longer(cols=78:80,
+               names_to="Tipo de medida",
+               values_to = "Total") %>% 
+  mutate(Total=case_when(
+    Total %in% c("Sí", "Si")~1, 
+    T~0)) %>% 
+  group_by(`Tipo de medida`) %>% 
+  summarise(`Total de medidas`=sum(Total))->aprobada_med_anterior
+
+aprobada_med_anterior[1,1]->aprobada_1_anterior
+aprobada_1_anterior %>% unlist()->aprobada_1_anterior
+aprobada_med_anterior[1,2]->aprobada_total_1_anterior
+aprobada_total_1_anterior %>% unlist()->aprobada_total_1_anterior
+
+aprobada_med_anterior[2,1]->aprobada_2_anterior
+aprobada_2_anterior %>% unlist()->aprobada_2_anterior
+aprobada_med_anterior[2,2]->aprobada_total_2_anterior
+aprobada_total_2_anterior %>% unlist()->aprobada_total_2_anterior
+
+aprobada_med_anterior[3,1]->aprobada_3_anterior
+aprobada_3_anterior %>% unlist()->aprobada_3_anterior
+aprobada_med_anterior[3,2]->aprobada_total_3_anterior
+aprobada_total_3_anterior %>% unlist()->aprobada_total_3_anterior
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  pivot_longer(cols=78:80,
+               names_to="Medidas",
+               values_to = "Total") %>% 
+  mutate(Total=case_when(
+    Total=="Sí"~1, 
+    T~0)) %>% 
+  group_by(Medidas) %>% 
+  filter(!Medidas == "Otra (específicar)") %>% 
+  summarise(`Total de medidas`=sum(Total))->total_med_asc_anterior
+
+total_med_asc_anterior[1,1]-> med_1_anterior
+med_1_anterior%>% unlist()->med_1_anterior
+total_med_asc_anterior[1,2]-> total_med_1_anterior 
+total_med_1_anterior%>% unlist()->total_med_1_anterior
+
+total_med_asc_anterior[2,1]-> med_2_anterior 
+med_2_anterior%>% unlist()->med_2_anterior
+total_med_asc_anterior[2,2]-> total_med_2_anterior 
+total_med_2_anterior%>% unlist()->total_med_2_anterior
+
+
+total_med_asc_anterior[3,1]-> med_3_anterior
+med_3_anterior%>% unlist()->med_3_anterior
+total_med_asc_anterior[3,2]-> total_med_3_anterior 
+total_med_3_anterior%>% unlist()->total_med_3_anterior
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  pivot_longer(cols=78:80,
+               names_to="Medidas",
+               values_to = "Total") %>% 
+  mutate(Total=case_when(
+    Total=="Sí"~1, 
+    T~0)) %>% 
+  group_by(Medidas) %>% 
+  filter(!Medidas == "Otra (específicar)") %>% 
+  summarise(`Total de medidas`=sum(Total),
+            Porcentaje= (`Total de medidas`/tot_med)) %>% 
+  ggplot(aes(x=Medidas, y=Porcentaje, fill=Medidas , 
+             label=percent(Porcentaje, accuracy = 1),
+             text = paste("\nTotal de cias: ", percent(Porcentaje, accuracy = 1.1),
+                          "\nConducta: ", Medidas , sep="")))+
+  geom_bar(position = "stack", stat = "identity", color="white", alpha=.8)+
+  geom_label(aes(x=Medidas, y=Porcentaje, group=Medidas),position = position_stack(vjust = 1),
+             fill = "white", colour="black", size = 4)+
+  scale_fill_manual(values = c(
+            `Cambio a la víctima` = "#9F2241",
+            `Cambio al agresor` = "#235B4E")) + 
+  scale_y_continuous(labels = percent_format()) +
+  labs(x="", y="", title="Total de medidas de protección",
+       subtitle = paste0("Periodo: ", fecha_inicial_2, " a ", fecha_final_2))+
+  theme_bw()+
+  theme(legend.position = "none",
+        legend.text = element_text(face="bold"),
+        legend.title = element_blank(),
+        axis.title = element_text(face="bold"),
+        plot.title = element_text(face="bold", size=18),
+        plot.subtitle = element_text(size=10, face="italic"),
+        plot.caption = element_text(face="italic"))->gr_5_anterior
+
+
+
+
+```
+
+ 
+
+------------------------------------------------------------------------
+
+-   **d)     Por tipo de declarante**
+
+```{r, include=F, warning=F, echo=F, fig.width=12}
+
+
+quejas %>%
+    filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  filter(!is.na(Policía_Admon_Cadete_Ciudadana))%>%
+  #group_by(Policía_Admon_Cadete_Ciudadana)%>%
+  summarise(total=n())->total_policia
+
+total_policia[1,1]->total_policia
+total_policia %>% unlist()->total_policia
+
+quejas %>%
+    filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  filter(!is.na(Policía_Admon_Cadete_Ciudadana))%>%
+  group_by(Policía_Admon_Cadete_Ciudadana)%>%
+  summarise(total=n()) %>% 
+  arrange(-total)->total_policia_asc
+
+
+total_policia_asc[1,1]->policia_1
+policia_1 %>% unlist()->policia_1
+total_policia_asc[1,2]->policia_total_1
+policia_total_1 %>% unlist()->policia_total_1
+
+
+
+total_policia_asc[2,1]->policia_2
+policia_2 %>% unlist()->policia_2
+total_policia_asc[2,2]->policia_total_2
+policia_total_2 %>% unlist()->policia_total_2
+
+
+
+total_policia_asc[3,1]->policia_3
+policia_3 %>% unlist()->policia_3
+total_policia_asc[3,2]->policia_total_3
+policia_total_3 %>% unlist()->policia_total_3
+
+
+
+quejas %>%
+  filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  filter(!is.na(Policía_Admon_Cadete_Ciudadana))%>%
+  group_by(Policía_Admon_Cadete_Ciudadana)%>%
+  summarise(total=n())%>%
+  ggplot(aes(x=reorder(Policía_Admon_Cadete_Ciudadana, -total), y=total, fill=Policía_Admon_Cadete_Ciudadana))+
+  geom_col(alpha=.9)+
+  geom_label(aes(x = Policía_Admon_Cadete_Ciudadana, y = `total`, label = comma(total),  group=Policía_Admon_Cadete_Ciudadana,  color=Policía_Admon_Cadete_Ciudadana),
+             size=3, alpha=1,  label.size = 0.25,  fontface = "bold", fill="white")+
+
+  # geom_text(aes(label =  `Total`), size=4, vjust=-.7, fontface="bold") +
+  labs(x="", y="", title = "Total de quejas por tipo de declarante, semana actual", color=" ", fill=" " , size="",
+              subtitle = paste0("Periodo: ", fecha_inicial, " a ", fecha_final))+
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 9)) +
+  scale_y_continuous(labels = scales::comma) +
+  # scale_fill_brewer(palette = "Set1", direction = 1) +
+  scale_fill_manual(values = c(
+          `Cadete` = "#9F2241",
+          `Policía` = "#235B4E",
+          Ciudadana= "#0f3776"))+
+  theme_bw()+
+  theme(legend.position = "none",
+        legend.text = element_text(face="bold"),
+        legend.title = element_blank(),
+        axis.title = element_text(face="bold"),
+        plot.title = element_text(face="bold", size=13),
+        plot.subtitle = element_text(size=10, face="italic"),
+        plot.caption = element_text(face="italic"))->gr_6
+
+
+
+
+
+
+
+
+#######################################################################
+######################################################################
+
+
+quejas %>%
+    filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  filter(!is.na(Policía_Admon_Cadete_Ciudadana))%>%
+  #group_by(Policía_Admon_Cadete_Ciudadana)%>%
+  summarise(total=n())->total_policia_anterior
+
+total_policia_anterior[1,1]->total_policia_anterior
+total_policia_anterior %>% unlist()->total_policia_anterior
+
+quejas %>%
+    filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  filter(!is.na(Policía_Admon_Cadete_Ciudadana))%>%
+  group_by(Policía_Admon_Cadete_Ciudadana)%>%
+  summarise(total=n()) %>% 
+  arrange(-total)->total_policia_asc_anterior
+
+
+total_policia_asc_anterior[1,1]->policia_1_anterior
+policia_1_anterior %>% unlist()->policia_1_anterior
+total_policia_asc_anterior[1,2]->policia_total_1_anterior
+policia_total_1_anterior %>% unlist()->policia_total_1_anterior
+
+
+
+total_policia_asc_anterior[2,1]->policia_2_anterior
+policia_2_anterior %>% unlist()->policia_2_anterior
+total_policia_asc_anterior[2,2]->policia_total_2_anterior
+policia_total_2_anterior %>% unlist()->policia_total_2_anterior
+
+
+
+total_policia_asc_anterior[3,1]->policia_3_anterior
+policia_3_anterior %>% unlist()->policia_3_anterior
+total_policia_asc_anterior[3,2]->policia_total_3_anterior
+policia_total_3_anterior %>% unlist()->policia_total_3_anterior
+
+
+
+quejas %>%
+  filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  filter(!is.na(Policía_Admon_Cadete_Ciudadana))%>%
+  group_by(Policía_Admon_Cadete_Ciudadana)%>%
+  summarise(total=n())%>%
+  ggplot(aes(x=reorder(Policía_Admon_Cadete_Ciudadana, -total), y=total, fill=Policía_Admon_Cadete_Ciudadana))+
+  geom_col(alpha=.9)+
+  geom_label(aes(x = Policía_Admon_Cadete_Ciudadana, y = `total`, label = comma(total),  group=Policía_Admon_Cadete_Ciudadana,  color=Policía_Admon_Cadete_Ciudadana),
+             size=3, alpha=1,  label.size = 0.25,  fontface = "bold", fill="white")+
+
+  # geom_text(aes(label =  `Total`), size=4, vjust=-.7, fontface="bold") +
+  labs(x="", y="", title = "Total de quejas por tipo de declarante, semana anterior", color=" ", fill=" " , size="",
+              subtitle = paste0("Periodo: ", fecha_inicial_2, " a ", fecha_final_2))+
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 9)) +
+  scale_y_continuous(labels = scales::comma) +
+  # scale_fill_brewer(palette = "Set1", direction = 1) +
+  scale_fill_manual(values = c(
+          `Cadete` = "#9F2241",
+          `Policía` = "#235B4E",
+          Ciudadana= "#0f3776"))+
+  theme_bw()+
+  theme(legend.position = "none",
+        legend.text = element_text(face="bold"),
+        legend.title = element_blank(),
+        axis.title = element_text(face="bold"),
+        plot.title = element_text(face="bold", size=13),
+        plot.subtitle = element_text(size=10, face="italic"),
+        plot.caption = element_text(face="italic"))->gr_6_anterior
+  
+  
+```
+
+ 
+De **`r format(as.Date(fecha_inicial_2), "%d de %B")`** a **`r format(as.Date(fecha_final_2), "%d de %B de %Y")`** un total de **`r tolower(total_policia_anterior)`** mujeres víctimas de violencia por parte de personal policial han interpuesto quejas, las cuales se clasifican de la manera siguiente: (**`r policia_total_1_anterior`** son **`r tolower(policia_1_anterior)`** y **`r policia_total_2_anterior`** **`r tolower(policia_2_anterior)`**).
+
+ 
+
+De **`r format(as.Date(fecha_inicial), "%d de %B")`** a **`r format(as.Date(fecha_final), "%d de %B de %Y")`** un total de **`r tolower(total_policia)`** mujeres víctimas de violencia por parte de personal policial han interpuesto quejas, las cuales se clasifican de la manera siguiente: (**`r policia_total_1`** es **`r tolower(policia_1)`**).
+ 
+
+```{r, include=T, warning=F, echo=F, fig.width=12}
+gr_6_anterior + gr_6
+```
+
+------------------------------------------------------------------------
+
+-   **e)     Por medidas de protección**
+
+De **`r format(as.Date(fecha_inicial_2), "%d de %B")`** a **`r format(as.Date(fecha_final_2), "%d de %B de %Y")`** se otorgaron **`r med_aprobadas_anterior`** medidas de protección (**`r total_med_1_anterior`** fueron **`r tolower(med_1_anterior)`**, **`r total_med_2_anterior`** en estatus de **`r tolower(med_2_anterior)`** y **`r total_med_3_anterior`** como **`r tolower(med_3_anterior)`**).
+ 
+
+De **`r format(as.Date(fecha_inicial), "%d de %B")`** a **`r format(as.Date(fecha_final), "%d de %B de %Y")`** se otorgaron **`r med_aprobadas`** medidas de protección (**`r total_med_1`** fueron **`r tolower(med_1)`**, **`r total_med_2`** en estatus de **`r tolower(med_2)`** y **`r total_med_3`** como **`r tolower(med_3)`**).
+ 
+
+
+```{r, include=T, warning=F, echo=F, fig.width=12}
+
+gr_5_anterior + gr_5
+```
+
+------------------------------------------------------------------------
+
+ 
+
+-   **f)     Servicios otorgados**
+
+```{r, include=F, warning=F, echo=F}
+quejas %>% 
+    filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  # group_by(Necesidades_inmediatas_víctima) %>% 
+  summarise(`Total de medidas`=n())->servicios_totales
+
+# servicios_totales[1,1]->servicios_totales_1
+# servicios_totales_1 %>% unlist()->servicios_totales_1
+# 
+# servicios_totales[1,2]->total_servicio_1
+# total_servicio_1 %>% unlist()->total_servicio_1
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-11'), as.Date('2023-02-17'))) %>% 
+  group_by(Necesidades_inmediatas_víctima) %>% 
+  summarise(`Total de servicios`=n()) %>% 
+  arrange(-`Total de servicios`)->tabla_1
+
+
+tabla_1[1,1]->servicio_1
+servicio_1 %>% unlist()->servicio_1
+tabla_1[1,2]->servicio_total_1
+servicio_total_1 %>% unlist()->servicio_total_1
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+
+quejas %>% 
+    filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  # group_by(Necesidades_inmediatas_víctima) %>% 
+  summarise(`Total de medidas`=n())->servicios_totales_anterior
+
+# servicios_totales[1,1]->servicios_totales_1
+# servicios_totales_1 %>% unlist()->servicios_totales_1
+# 
+# servicios_totales[1,2]->total_servicio_1
+# total_servicio_1 %>% unlist()->total_servicio_1
+
+quejas %>% 
+  filter(between(Fecha_queja, as.Date('2023-02-04'), as.Date('2023-02-10'))) %>% 
+  group_by(Necesidades_inmediatas_víctima) %>% 
+  summarise(`Total de servicios`=n()) %>% 
+  arrange(-`Total de servicios`)->tabla_1_anterior
+
+
+tabla_1_anterior[1,1]->servicio_1_anterior
+servicio_1_anterior %>% unlist()->servicio_1_anterior
+tabla_1_anterior[1,2]->servicio_total_1_anterior
+servicio_total_1_anterior %>% unlist()->servicio_total_1_anterior
+
+
+
+```
+
+De **`r format(as.Date(fecha_inicial_2), "%d de %B")`** a **`r format(as.Date(fecha_final_2), "%d de %B de %Y")`** se registaron **`r servicios_totales_anterior`** usuarias para los servicios y acciones. 
+
+ 
+
+
+De **`r format(as.Date(fecha_inicial), "%d de %B")`** a **`r format(as.Date(fecha_final), "%d de %B de %Y")`** se registaron **`r servicios_totales`** usuarias para los servicios y acciones que se desglosan a continuación. 
+
+
+```{r, include=T, warning=F, echo=F, fig.width=12}
+
+
+DT::datatable(tabla_1_anterior, 
+              caption = "Semana anterior",
+                 colnames = c('',
+                              'Servicios', 
+                              'Total'))
+
+
+```
+
+------------------------------------------------------------------------
+
+```{r, include=T, warning=F, echo=F, fig.width=12}
+
+
+
+DT::datatable(tabla_1, 
+              caption = "Semana actual",
+                 colnames = c('',
+                              'Servicios', 
+                              'Total'))
+
+
+```
+:::
